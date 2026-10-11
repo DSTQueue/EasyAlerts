@@ -8,6 +8,10 @@
   "permissions": [
     "core:default",
     "opener:default",
-    "sqlite:default"
+    "sqlite:default",
+    "sql:allow-load",
+    "sql:allow-execute",
+    "sql:allow-select",
+    "notification:default"
   ]
 }

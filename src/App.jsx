@@ -57,22 +57,50 @@ export default App;
 //this page should render all the static html
 
 import reactLogo from "./assets/react.svg";
-import TestFunction from './TestFunction.jsx';
-import ListReminders from "./components/ListReminders.jsx";
+import Database from "@tauri-apps/plugin-sql";
+import { useEffect } from "react";
+import { useState } from "react";
+import {InitializeDatabase} from "./components/InitializeDatabase.js"
+import ReminderForm from "./components/ReminderForm.jsx"
+import PrintReminderList from "./components/PrintReminderList.jsx"
+import {LoadReminders} from "./components/LoadReminders.js"
+import {GetReminderSQL} from "./components/InitializeDatabase.js"
+
+
 
 function App () {
+  const [reminders, setReminders] = useState([]);
+  //any componenet that calls setReminders updates the app state and causes a rerender
+  useEffect(()=> { //loads the data when app launches
+    async function LoadRemindersFromDB() {
+      const data = GetReminderSQL();
+      setReminders(data)
+    }
+    LoadRemindersFromDB();
+  }, []);
+
+  useEffect(() => { //creates or finds database when the app launches
+    InitializeDatabase();
+  }, []);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      LoadReminders({setReminders});
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <main class="dashboard">
-      <div class="sidebar">
-        <div class="time-view">
+    <main className="dashboard">
+      <div className="sidebar">
+        <div className="time-view">
           <p>Today</p>
           <p>This week</p>
           <p>Later</p>
         </div>
       </div>
-      <div class="right-side">
-      <div class="main-content">
-        <div class="heading">
+      <div className="right-side">
+      <div className="main-content">
+        <div className="heading">
           <h1>Today's reminders</h1>
           <p>
             <img src="/EasyAlert logo.png" className="logo EasyAlert" alt="EasyAlert logo" />
@@ -82,35 +110,12 @@ function App () {
             <img src={reactLogo} className="logo react" alt="React logo" />
           </p>
         </div>
-        <div class="reminders">
-          <ListReminders />
+        <div className="reminders">
+          <PrintReminderList reminders={reminders} />
         </div>
       </div>
       <div id="input-area">
-        <form>
-          <label id="reminder-input" class="input-label">
-            Add reminder:
-            <input type="text" />
-          </label>
-          <label id="date-input" class="input-label">
-            Date
-            <input type="date" />
-          </label>
-          <label id="importance-level" class="input-label">
-            Importance
-            <select>
-              <option>5</option>
-              <option>4</option>
-              <option>3</option>
-              <option>2</option>
-              <option>1</option>
-            </select>            
-          </label>
-          <label id="weekly-recurring" class="input-label">
-            Recurring
-            <input type="checkbox" unchecked/>
-          </label>
-        </form>
+        <ReminderForm setReminders={setReminders}/>
       </div>
       </div>
     </main>
